@@ -1,0 +1,51 @@
+---
+- name: Deploy Cluster Addons for E2E Cluster
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    deploy_external_dns: true
+    deploy_cert_manager: true
+    deploy_cluster_issuer: true
+    deploy_ingress_nginx: true
+    # deploy_nfs_csi_driver: true
+
+  tasks:        
+    - name: Create addons namespace
+      kubernetes.core.k8s:
+        name: addons
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy External DNS
+      include_role:
+        name: external-dns
+      when: deploy_external_dns | default(true)
+      tags: external-dns
+
+    - name: Deploy Cert Manager
+      include_role:
+        name: cert-manager
+      when: deploy_cert_manager | default(true)
+      tags: cert-manager
+
+    - name: Apply ClusterIssuer manifest
+      kubernetes.core.k8s:
+        state: present
+        src: ./clusterIssuer/clusterIssuer.yaml
+      when: deploy_cluster_issuer | bool
+      tags: cluster-issuer
+    
+    - name: Deploy Ingress NGINX
+      include_role:
+        name: ingress-nginx
+      when: deploy_ingress_nginx | default(true)
+      tags: ingress-nginx
+
+    # - name: Deploy NFS CSI Driver
+    #   include_role:
+    #     name: csi-driver
+    #   when: deploy_nfs_csi_driver | default(true)
+    #   tags: csi-driver

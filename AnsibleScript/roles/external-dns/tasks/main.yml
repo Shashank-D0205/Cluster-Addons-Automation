@@ -1,0 +1,17 @@
+- name: Create external-dns namespace
+  kubernetes.core.k8s:
+    name: addons
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy external-dns using Helm chart
+  kubernetes.core.helm:
+    name: external-dns
+    chart_ref: "{{ externaldns_chart_path }}"
+    release_namespace: addons
+    create_namespace: false
+    values: "{{ external_dns_values | combine({'nodeSelector': addon_node_selector}, recursive=True) }}"
+    wait: true
+    wait_timeout: '{{ helm_timeout }}'
+    state: present

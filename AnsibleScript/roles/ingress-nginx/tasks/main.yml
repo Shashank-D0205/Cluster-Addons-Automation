@@ -1,0 +1,18 @@
+---
+- name: Create addons namespace if it doesn't exist
+  kubernetes.core.k8s:
+    name: addons
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy ingress-nginx using Helm chart
+  kubernetes.core.helm:
+    name: ingress-nginx
+    chart_ref: "{{ ingress_nginx_chart_path }}"
+    release_namespace: addons
+    create_namespace: false
+    values: "{{ ingress_nginx_values | combine({'controller': {'nodeSelector': addon_node_selector}}) }}"
+    wait: true
+    wait_timeout: "{{ helm_timeout }}"
+    state: present

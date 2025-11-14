@@ -1,0 +1,59 @@
+externaldns_chart_path: "../helm-charts/external-dns-chart/"
+
+external_dns_values:
+  provider: aws
+  policy: upsert-only
+  registry: txt
+  txtOwnerId: external-dns-controller
+  sources:
+    - service
+    - ingress
+  domainFilters:
+    - example.com
+    - app.example.com
+    - internal.example
+
+  aws:
+    region: us-east-1
+    zoneType: public
+    credentials:
+      accessKey: "{{ aws_access_key_id }}"
+      secretKey: "{{ aws_secret_access_key }}"
+      mountPath: "/.aws"
+      secretName: ""  
+
+  logLevel: debug
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    fsGroup: 65534
+
+  podSecurityContext:
+    enabled: true
+    fsGroup: 65534
+
+  serviceAccount:
+    create: true
+
+  replicaCount: 1
+
+  extraArgs:
+    ingress-class:
+      - nginx
+
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/external-dns
+    tag: 0.15.0-debian-12-r4
+    pullPolicy: IfNotPresent

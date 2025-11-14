@@ -1,0 +1,43 @@
+name: install-cluster-addons
+run-name: Install Kubernetes Addons on ${{ inputs.environment }} from ${{ github.ref_name }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment for deployment"
+        required: true
+        default: dev
+        type: environment        
+
+env:
+# generice global secrets created in github
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  install-addons:
+    environment: ${{ inputs.environment }}
+    runs-on: [self-hosted, kubernetes-ops]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Kubernetes Addons via Ansible
+        run: |
+          ansible-playbook ./cluster-addons/playbook.yml -i localhost, --connection=local \
+            --extra-vars "aws_access_key_id=${{ env.AWS_ACCESS_KEY_ID }} aws_secret_access_key=${{ env.AWS_SECRET_ACCESS_KEY }}"
+
+      - name: Log Deployment Metadata
+        run: |
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Commit Message: ${{ github.event.head_commit.message }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run Number: ${{ github.run_number }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Timestamp: $(date)"

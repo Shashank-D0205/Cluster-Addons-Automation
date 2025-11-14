@@ -1,0 +1,47 @@
+ingress_nginx_chart_path: "../helm-charts/ingress-nginx"
+ingress_nginx_values:
+  controller:
+    replicaCount: 1
+    service:
+      enabled: true
+      type: LoadBalancer
+      externalTrafficPolicy: Local
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    ingressClass: nginx
+    ingressClassByName: true
+    ingressClassResource:
+      enabled: true
+      default: true
+      name: nginx
+      controllerValue: k8s.io/ingress-nginx
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 101
+      fsGroup: 101
+    config:
+      ssl-protocols: TLSv1.2 TLSv1.3
+      use-forwarded-headers: 'true'
+      client-max-body-size: 100m
+    metrics:
+      enabled: true
+      port: 10254
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - ingress-nginx
+            topologyKey: kubernetes.io/hostname
+  rbac:
+    create: true

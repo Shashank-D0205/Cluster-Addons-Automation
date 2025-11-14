@@ -1,0 +1,18 @@
+---
+- name: Create addons namespace if it doesn't exist
+  kubernetes.core.k8s:
+    name: addons
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy cert-manager using Helm chart
+  kubernetes.core.helm:
+    name: cert-manager
+    chart_ref: "{{ cert_manager_chart_path }}"
+    release_namespace: addons
+    create_namespace: false
+    values: "{{ cert_manager_values | combine({'nodeSelector': addon_node_selector}) }}"
+    wait: true
+    wait_timeout: "{{ helm_timeout }}"
+    state: present

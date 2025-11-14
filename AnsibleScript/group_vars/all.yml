@@ -1,0 +1,15 @@
+---
+helm_timeout: 600s
+
+cluster_provider: ""
+
+route53_zones:
+  - domain: "example.com"
+    hosted_zone_id: "ZONE_ID_1"
+  - domain: "app.example.com"
+    hosted_zone_id: "ZONE_ID_2"
+  - domain: "internal.example"
+    hosted_zone_id: "ZONE_ID_3"
+
+letsencrypt_email: "shashank.dixit002@gmail.com"
+
